@@ -1,0 +1,100 @@
+package rules
+
+import com.udea.aerolinea.model.Passenger
+import com.udea.aerolinea.model.Flight
+import com.udea.aerolinea.model.PassengerEvaluationResult
+
+// Regla 1: Ascenso a clase ejecutiva por retraso para clientes frecuentes
+rule "UpgradeToBusinessClassForFrequentFlyersWithDelays"
+    when
+        $passenger : Passenger(membershipStatus == "Gold" || membershipStatus == "Platinum")
+        $flight : Flight(delayMinutes > 60)
+        $result : PassengerEvaluationResult()
+    then
+        $result.setUpgradedToBusiness(true);
+end
+
+// Regla 2: Check-in prioritario para adultos mayores
+rule "PriorityCheckInForSeniors"
+    when
+        $passenger : Passenger(age > 65)
+        $result : PassengerEvaluationResult()
+    then
+        $result.setPriorityCheckIn(true);
+end
+
+// Regla 3: Descuento por equipaje ligero
+rule "DiscountForLightLuggage"
+    when
+        $passenger : Passenger(luggageWeight < 10)
+        $result : PassengerEvaluationResult()
+    then
+        $result.setDiscountPercentage(10.0);
+end
+
+// Regla 4: Negar ascenso por equipaje con sobrepeso
+rule "DenyUpgradeForOverweightLuggage"
+    when
+        $passenger : Passenger(luggageWeight > 23)
+        $result : PassengerEvaluationResult()
+    then
+        $result.setEligibleForUpgrade(false);
+end
+
+// Regla 5: Asignar asiento de salida de emergencia a adultos y jovenes
+rule "AssignEmergencyExitSeatToYoungAdults"
+    when
+        $passenger : Passenger(age >= 18, age <= 40, seatPreference == "Any")
+        $flight : Flight(emergencyExitSeatAvailable == true)
+        $result : PassengerEvaluationResult()
+    then
+        $result.setEmergencyExitSeatAssigned(true);
+        $flight.setEmergencyExitSeatAvailable(false);
+end
+
+// Regla 6: Compensación si hay un retraso extremo
+rule "CompensationForExtremeDelays"
+    when
+        $flight : Flight(delayMinutes > 180)
+        $result : PassengerEvaluationResult()
+    then
+        $result.setCompensationAmount(200.0);
+end
+
+// Regla 7: Puntos de lealtad extra por los vuelos largos
+rule "ExtraLoyaltyPointsForLongFlights"
+    when
+        $passenger : Passenger(membershipStatus != "Basic")
+        $flight : Flight(durationMinutes > 300)
+        $result : PassengerEvaluationResult()
+    then
+        $result.setLoyaltyPointsAdded(500);
+end
+
+// Regla 8: Restringir equipaje en los vuelos cortos
+rule "RestrictLuggageOnShortFlights"
+    when
+        $passenger : Passenger(luggageWeight > 15)
+        $flight : Flight(durationMinutes < 120)
+        $result : PassengerEvaluationResult()
+    then
+        $result.setLuggageAllowed(false);
+end
+
+// Regla 9: Acceso al salón VIP para miembros de la membresia platinum
+rule "VipLoungeAccessForPlatinumMembers"
+    when
+        $passenger : Passenger(membershipStatus == "Platinum")
+        $result : PassengerEvaluationResult()
+    then
+        $result.setVipLoungeAccess(true);
+end
+
+// Regla 10: Asientos preferencial para familias
+rule "PreferentialSeatForFamilies"
+    when
+        $passenger : Passenger(travelingWithChildren == true, seatPreference == "Any")
+        $result : PassengerEvaluationResult()
+    then
+        $result.setPreferentialSeatAssigned(true);
+end

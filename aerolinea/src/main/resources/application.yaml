@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: aerolinea
+  autoconfigure:
+    exclude: org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
